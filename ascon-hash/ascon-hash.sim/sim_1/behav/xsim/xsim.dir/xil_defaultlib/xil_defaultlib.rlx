@@ -1,0 +1,10 @@
+0.7
+2020.2
+Oct 14 2022
+05:20:55
+C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.sim/sim_1/behav/xsim/glbl.v,1665704903,verilog,,,,glbl,,,,,,,,
+C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.srcs/sim_1/new/ascp_tb.v,1743341329,verilog,,,,ascp_tb,,,,,,,,
+C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.srcs/sim_1/new/rotr_tb.v,1742177715,verilog,,,,rotr_tb,,,,,,,,
+C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.srcs/sources_1/new/ascon_p.v,1743340063,verilog,,C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.srcs/sources_1/new/round_counter.v,,ascon_p,,,,,,,,
+C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.srcs/sources_1/new/rotr.v,1740632518,verilog,,C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.srcs/sim_1/new/rotr_tb.v,,rotr,,,,,,,,
+C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.srcs/sources_1/new/round_counter.v,1743340627,verilog,,C:/Users/USER/XilinxProject/ascon-hash/ascon-hash.srcs/sim_1/new/ascp_tb.v,,round_counter,,,,,,,,
