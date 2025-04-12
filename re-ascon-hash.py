@@ -185,12 +185,12 @@ def printwords(S, description=""):
 if __name__ == "__main__":
     # Test state initialization
     # debug = True
-    debugpermutation = True
+    # debugpermutation = True
 
     message = b"ascon"
 
     print("=== [RE-] demo hash using Ascon-Hash ===")
     hashtag = ascon_hash(message, hashlength=32)
 
-    print(f"Messsage: 0x{message.hex()} ({len(message)} bytes)")
+    print(f"Message: 0x{message.hex()} ({len(message)} bytes)")
     print(f"Hash tag: 0x{hashtag.hex()} ({len(hashtag)} bytes)")
