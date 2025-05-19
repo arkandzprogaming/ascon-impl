@@ -22,12 +22,10 @@
 
 module ascp_tb();
     parameter BW = 64;
-    parameter DIN = 0;
     
     // input
     reg clk;
     reg rstn;
-    reg [3:0] din;
     reg [BW*5 - 1:0] s_in;
     
     // output
@@ -38,7 +36,6 @@ module ascp_tb();
     ascon_p #(BW) uut(
         .clk(clk),
         .rstn(rstn),
-        .din(din),
         .s_in(s_in),
         .s_out(s_out),
         .r(r),
@@ -52,7 +49,6 @@ module ascp_tb();
         // Initialize signals
         clk = 1;
         rstn = 0;   // Counter loads initial value (load == !rstn)
-        din = DIN;  // Initial load value for counter
         
         // State initial value
         s_in = {64'h00400C0000000100, 256'h0};

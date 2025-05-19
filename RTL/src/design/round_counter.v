@@ -24,19 +24,18 @@ module round_counter (
     input clk,              // Clock signal
     input load,             // Load enable signal
     input inc,              // Increment enable signal
-    input [3:0] din,        // Load value
     output reg [3:0] dout,  // Current round count
     output reg done         // Stop signal when count reaches 12
 );
     
     always @(posedge clk) begin
         if (load) begin
-            dout <= din;        // Load initial value
+            dout <= 0;       // Load initial value
             done <= 0;
         end
         else if (inc && !done) begin
-            dout <= dout + 1;   // Increment count
-            if (dout == 4'd11)  // When reaching 12 rounds
+            dout <= dout + 1;       // Increment count
+            if (dout == 4'd11)      // When reaching round 12
                 done <= 1;
         end
     end
