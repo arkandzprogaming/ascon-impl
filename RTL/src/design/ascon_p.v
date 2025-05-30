@@ -49,7 +49,7 @@ module ascon_p
     reg [BW-1:0] s_sub_0, s_sub_1, s_sub_2, s_sub_3, s_sub_4;
     
     // Intermediate registers for linear diffusion steps
-    reg [BW-1:0] s_q0, s_q1, s_q2, s_q3, s_q4;
+    wire [BW-1:0] s_q0, s_q1, s_q2, s_q3, s_q4;
     
     // Registers after linear diffusion ROTR
     reg [BW-1:0] s_ld_0, s_ld_1, s_ld_2, s_ld_3, s_ld_4;
@@ -63,12 +63,51 @@ module ascon_p
     
     // -- SUB-MODULES -- //////////
 
+    // Round counter instance
     round_counter round_ctr (
         .clk(clk),
         .load(!rstn),
         .inc(1'b1),     // Always increment on each clock cycle
         .dout(roundw),
         .done(done)
+    );
+    
+    // ROTR instances
+    rotr rot_q0 (
+        .clk(clk),
+        .rstn(rstn),
+        .val(s_sub_0),
+        .n_1(19),
+        .n_2(28),
+        .out(s_q0)
+    ); rotr rot_q1 (
+        .clk(clk),
+        .rstn(rstn),
+        .val(s_sub_1),
+        .n_1(61),
+        .n_2(39),
+        .out(s_q1)
+    ); rotr rot_q2 (
+        .clk(clk),
+        .rstn(rstn),
+        .val(s_sub_2),
+        .n_1(1),
+        .n_2(6),
+        .out(s_q2)
+    ); rotr rot_q3 (
+        .clk(clk),
+        .rstn(rstn),
+        .val(s_sub_3),
+        .n_1(10),
+        .n_2(17),
+        .out(s_q3)
+    ); rotr rot_q4 (
+        .clk(clk),
+        .rstn(rstn),
+        .val(s_sub_4),
+        .n_1(7),
+        .n_2(41),
+        .out(s_q4)
     );
     
     
@@ -111,13 +150,7 @@ module ascon_p
 //assign s_from_sub = {s_sub_0, s_sub_1, s_sub_2, s_sub_3, s_sub_4};
     
     // combinational permutation "linear diffusion layer"
-    always @(*) begin
-        s_q0 = ((s_sub_0 >> 19) | (s_sub_0 << (BW - 19))) ^ ((s_sub_0 >> 28) | (s_sub_0 << (BW - 28)));
-        s_q1 = ((s_sub_1 >> 61) | (s_sub_1 << (BW - 61))) ^ ((s_sub_1 >> 39) | (s_sub_1 << (BW - 39)));
-        s_q2 = ((s_sub_2 >> 1) | (s_sub_2 << (BW - 1))) ^ ((s_sub_2 >> 6) | (s_sub_2 << (BW - 6)));
-        s_q3 = ((s_sub_3 >> 10) | (s_sub_3 << (BW - 10))) ^ ((s_sub_3 >> 17) | (s_sub_3 << (BW - 17)));
-        s_q4 = ((s_sub_4 >> 7) | (s_sub_4 << (BW - 7))) ^ ((s_sub_4 >> 41) | (s_sub_4 << (BW - 41)));
-        
+    always @(*) begin        
         s_ld_0 = s_sub_0 ^ s_q0;
         s_ld_1 = s_sub_1 ^ s_q1;
         s_ld_2 = s_sub_2 ^ s_q2;
