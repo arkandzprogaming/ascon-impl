@@ -26,12 +26,13 @@ module ascon_p
         input clk,
         input rstn,
         input [BW*5 - 1:0] s_in,
+        
         output [BW*5 - 1:0] s_out,
         output [3:0] r,
         output done
     );
     
-    // -- REGISTERS AND WIRES -- //////////
+    // -- REGISTERS AND WIRES -- ////////////////
     
     // Wire for "add round constants" layer
     wire [BW-1:0] s_rc0; // MSB word
@@ -61,7 +62,7 @@ module ascon_p
     wire [BW*5-1:0] s_from_ld;  // Output of linear diffusion layer
     
     
-    // -- SUB-MODULES -- //////////
+    // -- SUB-MODULES -- ////////////////
 
     // Round counter instance
     round_counter round_ctr (
@@ -111,7 +112,7 @@ module ascon_p
     );
     
     
-    // -- LOGIC -- //////////
+    // -- LOGIC -- ////////////////
     
     // combinational permutation "add round constants"
     assign s_rc0 = s_reg [BW*5 - 1:BW*4];
