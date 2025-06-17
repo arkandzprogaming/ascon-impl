@@ -28,8 +28,8 @@ module top
         input start,
         
         // input message pre-processing
-        input [BW - 1:0] block_in,      // input message of 8-byte block
-        input [7:0] length,             // expected overall input message length (bytes)
+        input [BW - 1:0] block_in,      // Input message of 8-byte block
+        input [8:0] last,               // Last signal to indicate last message byte
         
         // tag squeezing
         output reg [BW*4 - 1:0] hash_tag,   // 256-bit hash tag
@@ -43,8 +43,8 @@ module top
     
     // -- REGISTERS AND WIRES -- ////////////////
     
-    wire load_block;    // load new block into du register
-    wire en_hashtag;    // enable hash_tag output wiring to top
+    wire load_block;    // Load new block into du register
+    wire en_hashtag;    // Enable hash_tag output wiring to top
     
     
     // -- SUB-MODULES -- ////////////////
@@ -66,7 +66,7 @@ module top
         .rstn(rstn),
         .start(start),
         .new_block(block_in),
-        .m_length(length),
+        .last(last),
         
         // wired from cu
         .load_block(load_block),

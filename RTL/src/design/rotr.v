@@ -23,8 +23,6 @@
 module rotr
     #(parameter BW = 64)
     (
-        input clk,
-        input rstn,
         input [BW - 1:0] val,    // input to be rotated
         input [5:0] n_1,         // number of rotation up to 63
         input [5:0] n_2,         // number of rotation up to 63

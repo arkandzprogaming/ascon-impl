@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 02/27/2025 11:59:43 AM
+// Create Date: 06/14/2025 08:12:32 AM
 // Design Name: 
-// Module Name: ascon_p
+// Module Name: ascon_p_core
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,19 +20,31 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module ascon_p
+module ascon_p_core    
     # (parameter BW = 64)
     (
         input clk,
         input rstn,
+        input [3:0] round,
         input [BW*5 - 1:0] s_in,
         
-        output [BW*5 - 1:0] s_out,
-        output [3:0] r,
-        output done
+        output reg [BW*5 - 1:0] s_out
     );
     
     // -- REGISTERS AND WIRES -- ////////////////
+    
+    reg [BW*5-1:0] s_reg;
+    reg [3:0] roundw;           // Current round constant input
+    
+    always @(posedge clk or negedge rstn) begin
+        if (!rstn) begin
+            roundw <= 0;
+            s_reg <= 0;      // Let the effect of s_in be stuck at !rstn
+        end else begin
+            roundw <= round;
+            s_reg <= s_in;   // Start s_in
+        end
+    end 
     
     // Wire for "add round constants" layer
     wire [BW-1:0] s_rc0; // MSB word
@@ -56,22 +68,9 @@ module ascon_p
     reg [BW-1:0] s_ld_0, s_ld_1, s_ld_2, s_ld_3, s_ld_4;
     
     // Additional wires and registers
-    reg  [BW*5-1:0] s_reg;
-    wire [3:0] roundw;          // Current round constant input
     wire [BW*5-1:0] s_from_sub; // Output of substitution layer
     wire [BW*5-1:0] s_from_ld;  // Output of linear diffusion layer
     
-    
-    // -- SUB-MODULES -- ////////////////
-
-    // Round counter instance
-    round_counter round_ctr (
-        .clk(clk),
-        .load(!rstn),
-        .inc(1'b1),     // Always increment on each clock cycle
-        .dout(roundw),
-        .done(done)
-    );
     
     // ROTR instances
     rotr rot_q0 (
@@ -104,10 +103,28 @@ module ascon_p
     
     // -- LOGIC -- ////////////////
     
+    // round constant ROM lookup
+    function [BW - 1:0] c_r (input integer round);
+        case (round)
+            0: c_r = 64'd240; 
+            1: c_r = 64'd225;
+            2: c_r = 64'd210;
+            3: c_r = 64'd195;
+            4: c_r = 64'd180;
+            5: c_r = 64'd165;
+            6: c_r = 64'd150;
+            7: c_r = 64'd135;
+            8: c_r = 64'd120;
+            9: c_r = 64'd105;
+            10: c_r = 64'd90;
+            11: c_r = 64'd75;
+        endcase
+    endfunction
+    
     // combinational permutation "add round constants"
     assign s_rc0 = s_reg [BW*5 - 1:BW*4];
     assign s_rc1 = s_reg [BW*4 - 1:BW*3];
-    assign s_rc2 = s_reg [BW*3 - 1:BW*2] ^ (8'hf0 - roundw * 8'h10 + roundw * 8'h01);
+    assign s_rc2 = s_reg [BW*3 - 1:BW*2] ^ c_r (roundw);
     assign s_rc3 = s_reg [BW*2 - 1:BW*1];
     assign s_rc4 = s_reg [BW*1 - 1:BW*0];
     
@@ -136,12 +153,8 @@ module ascon_p
         s_sub_3 = s_p2_3 ^ s_p2_2;
         s_sub_2 = s_p2_2 ^ {BW{1'b1}};
         s_sub_4 = s_p2_4;
-    end
-
-//assign s_from_sub = {s_sub_0, s_sub_1, s_sub_2, s_sub_3, s_sub_4};
     
-    // combinational permutation "linear diffusion layer"
-    always @(*) begin        
+        // combinational permutation "linear diffusion layer"        
         s_ld_0 = s_sub_0 ^ s_q0;
         s_ld_1 = s_sub_1 ^ s_q1;
         s_ld_2 = s_sub_2 ^ s_q2;
@@ -149,20 +162,14 @@ module ascon_p
         s_ld_4 = s_sub_4 ^ s_q4;
     end
  
- assign s_from_ld = {s_ld_0, s_ld_1, s_ld_2, s_ld_3, s_ld_4};
-    
-    always @(posedge clk or negedge rstn) begin
-        if (!rstn) begin
-            s_reg <= s_in;      // Let the effect of s_in be stuck at !rstn
-        end else begin
-//            s_reg <= s_from_sub;
-            s_reg <= s_from_ld; // Update state with the previous-cycle computed value
-        end
-    end
-    
-    // output
-    assign s_out = s_reg;
-    assign r = roundw;
-    
-    
-endmodule
+     assign s_from_ld = {s_ld_0, s_ld_1, s_ld_2, s_ld_3, s_ld_4};
+        
+        always @(posedge clk or negedge rstn) begin
+            if (!rstn) begin
+                s_out <= 0;
+            end else begin
+                s_out <= s_from_ld;
+            end
+        end 
+        
+    endmodule
