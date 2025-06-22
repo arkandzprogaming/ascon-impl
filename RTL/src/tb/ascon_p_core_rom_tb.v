@@ -30,40 +30,21 @@ module ascon_p_core_tb();
     // Testbench registers to drive the DUT inputs
     reg clk;
     reg rstn;
-    reg [7:0] round_const;
+    reg [3:0] round;
     reg [BW*5 - 1:0] s_in;
 
     // Wire to capture the DUT output
     wire [BW*5 - 1:0] s_out;
-    
-    
-        // round constant ROM lookup
-    function [7:0] c_r (input integer round);
-        case (round)
-            0: c_r = 8'd240; 
-            1: c_r = 8'd225;
-            2: c_r = 8'd210;
-            3: c_r = 8'd195;
-            4: c_r = 8'd180;
-            5: c_r = 8'd165;
-            6: c_r = 8'd150;
-            7: c_r = 8'd135;
-            8: c_r = 8'd120;
-            9: c_r = 8'd105;
-            10: c_r = 8'd90;
-            11: c_r = 8'd75;
-        endcase
-    endfunction
 
 
     // -- DUT INSTANTIATION -- //
     // Instantiate the Device Under Test (ascon_p_core)
-    ascon_p_core #(
+    ascon_p_core_rom #(
         .BW(BW)
     ) uut (
         .clk(clk),
         .rstn(rstn),
-        .round_const(round_const),
+        .round(round),
         .s_in(s_in),
         .s_out(s_out)
     );
@@ -80,7 +61,7 @@ module ascon_p_core_tb();
         $display("INFO: Initializing testbench signals...");
         clk = 1;
         rstn = 0; // Assert reset
-        round_const = 0;
+        round = 0;
         s_in = 0;
 
         // 2. Apply and release reset
@@ -96,8 +77,7 @@ module ascon_p_core_tb();
         $display("INFO: Starting 12 rounds of testing with random inputs...");
         for (integer i = 0; i < 12; i = i + 1) begin
             // Assign the current round number
-            // round = i;
-            round_const = c_r(i); // Get the round constant for the current round
+            round = i;
 
             // Generate a new 320-bit random value for s_in
             // We concatenate 10 calls to $urandom() since each returns a 32-bit value
@@ -107,7 +87,7 @@ module ascon_p_core_tb();
             @(posedge clk);
 
             // Display the results for the current round
-            $display("ROUND %0d @ %t: s_in = %h, s_out = %h", i, $time, s_in, s_out);
+            $display("ROUND %0d @ %t: s_in = %h, s_out = %h", round, $time, s_in, s_out);
         end
 
         // 4. End the simulation
@@ -120,7 +100,7 @@ module ascon_p_core_tb();
     // This block continuously monitors and prints the signal values whenever they change.
     // Useful for detailed debugging.
     initial begin
-        $monitor("MONITOR @ %t: rstn=%b, round_c=%d, s_in=%h, s_out=%h", $time, rstn, round_const, s_in, s_out);
+        $monitor("MONITOR @ %t: rstn=%b, round=%d, s_in=%h, s_out=%h", $time, rstn, round, s_in, s_out);
     end
 
 endmodule

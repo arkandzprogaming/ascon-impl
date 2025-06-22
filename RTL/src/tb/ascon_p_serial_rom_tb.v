@@ -293,7 +293,7 @@ module ascon_p_serial_tb();
     reg rstn;
     reg en;
     reg [2:0] slice_idx;
-    reg [7:0] round_const;
+    reg [3:0] round;
     reg [BW-1:0] slice_in;
 
     // Wire to capture the DUT output
@@ -303,32 +303,15 @@ module ascon_p_serial_tb();
     reg [BW-1:0] temp_s_in [0:4];
     reg [BW-1:0] temp_s_out [0:4];
 
-    function [7:0] c_r (input integer round);
-        case (round)
-            0: c_r = 8'd240; 
-            1: c_r = 8'd225;
-            2: c_r = 8'd210;
-            3: c_r = 8'd195;
-            4: c_r = 8'd180;
-            5: c_r = 8'd165;
-            6: c_r = 8'd150;
-            7: c_r = 8'd135;
-            8: c_r = 8'd120;
-            9: c_r = 8'd105;
-            10: c_r = 8'd90;
-            11: c_r = 8'd75;
-        endcase
-    endfunction
-
     // -- DUT INSTANTIATION -- //
-    ascon_p_serial #(
+    ascon_p_serial_rom #(
         .BW(BW)
     ) uut (
         .clk(clk),
         .rstn(rstn),
         .en(en),
         .slice_idx(slice_idx),
-        .round_const(round_const),
+        .round(round),
         .slice_in(slice_in),
         .slice_out(slice_out)
     );
@@ -345,7 +328,7 @@ module ascon_p_serial_tb();
         rstn = 0; // Assert reset
         en = 0;
         slice_idx = 0;
-        round_const = 0;
+        round = 0;
         slice_in = 0;
 
         // 2. Apply and release reset
@@ -357,10 +340,9 @@ module ascon_p_serial_tb();
         // 3. Main test loop: Iterate through rounds 0 to 11
         $display("INFO: Starting 12 rounds of serial testing...");
         for (integer i = 0; i < 12; i = i + 1) begin
-            // round = i;
-            round_const = c_r(i);
+            round = i;
             $display("--------------------------------------------------");
-            $display("INFO: Starting ROUND %0d", i);
+            $display("INFO: Starting ROUND %0d", round);
 
             // A. Serially load the 5 input slices with random data
             en = 1; // Enable loading
@@ -374,7 +356,7 @@ module ascon_p_serial_tb();
 
             // B. Serially read the 5 output slices
             // This loop is corrected to handle the 1-cycle output latency correctly.
-            $display("INFO: [Round %0d] Input loading complete. Reading output slices...", i);
+            $display("INFO: [Round %0d] Input loading complete. Reading output slices...", round);
 
             // Prime the pipeline: Set slice_idx to 0 so its result is ready after the next clock.
             slice_idx = 0;
@@ -398,7 +380,7 @@ module ascon_p_serial_tb();
             end
 
             // C. Display the full input and output states for the completed round
-            $display("RESULT [Round %0d] @ %t:", i, $time);
+            $display("RESULT [Round %0d] @ %t:", round, $time);
             $display("\tFull s_in  = %h_%h_%h_%h_%h", temp_s_in[0], temp_s_in[1], temp_s_in[2], temp_s_in[3], temp_s_in[4]);
             $display("\tFull s_out = %h_%h_%h_%h_%h", temp_s_out[0], temp_s_out[1], temp_s_out[2], temp_s_out[3], temp_s_out[4]);
         end
